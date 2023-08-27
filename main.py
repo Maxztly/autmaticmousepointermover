@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 import pyautogui
 import threading
 import time
@@ -6,9 +7,9 @@ import time
 class MouseMoverApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Mouse Mover")
+        self.root.title("Automatic Mouse Mover")
+        root.iconbitmap("pointer.ico")
 
-        # Fenstergröße und Position festlegen
         window_width = 300
         window_height = 200
         screen_width = root.winfo_screenwidth()
@@ -18,19 +19,29 @@ class MouseMoverApp:
         self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
 
         self.is_running = False
-        self.move_distance = 50  # Standardbewegungsentfernung
+        self.move_distance = 50  
+        self.start_button_text = "Start"
 
-        self.timer_label = tk.Label(root, text="Timer: 0 seconds")
-        self.timer_label.pack()
+        self.timer_label = tk.Label(root, text="Timer: 00:00:00", font=("Helvetica", 16))
+        self.timer_label.grid(row=0, column=0, columnspan=3, sticky="nsew", padx=10, pady=10)
 
         self.distance_var = tk.StringVar()
         self.distance_var.set("Medium")
 
-        self.distance_menu = tk.OptionMenu(root, self.distance_var, "Small", "Medium", "Large", command=self.set_move_distance)
-        self.distance_menu.pack()
+        self.distance_menu = ttk.Combobox(root, textvariable=self.distance_var, values=["Small", "Medium", "Large"], state="readonly")
+        self.distance_menu.grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky="nsew")
+        self.distance_menu.bind("<<ComboboxSelected>>", self.set_move_distance)
 
-        self.start_button = tk.Button(root, text="Start", command=self.start_movement)
-        self.start_button.pack()
+        self.start_button = tk.Button(root, text=self.start_button_text, command=self.start_movement)
+        self.start_button.grid(row=2, column=0, columnspan=3, padx=10, pady=10, sticky="nsew")
+        
+        # Configure rows and columns to expand with window resizing
+        root.grid_rowconfigure(0, weight=1)
+        root.grid_rowconfigure(1, weight=1)
+        root.grid_rowconfigure(2, weight=1)
+        root.grid_columnconfigure(0, weight=1)
+        root.grid_columnconfigure(1, weight=1)
+        root.grid_columnconfigure(2, weight=1)
 
         self.timer_thread = None
         self.seconds = 0
@@ -40,6 +51,9 @@ class MouseMoverApp:
     def start_movement(self):
         if not self.is_running:
             self.is_running = True
+            self.start_button_text = "Press ESC to exit"
+            self.start_button.config(text=self.start_button_text)
+            self.seconds = 0  # Reset the timer
             self.start_movement_thread()
             self.update_timer()
 
@@ -53,15 +67,23 @@ class MouseMoverApp:
 
     def update_timer(self):
         while self.is_running:
-            self.seconds += 1
-            self.timer_label.config(text=f"Timer: {self.seconds} seconds")
+            hours = self.seconds // 3600
+            minutes = (self.seconds // 60) % 60
+            seconds = self.seconds % 60
+            timer_text = f"Timer: {hours:02d}:{minutes:02d}:{seconds:02d}"
+            self.timer_label.config(text=timer_text)
             self.root.update()
             time.sleep(1)
+            self.seconds += 1
 
     def stop_movement(self, event):
-        self.is_running = False
+        if self.is_running:
+            self.is_running = False
+            self.start_button_text = "Start"
+            self.start_button.config(text=self.start_button_text)
 
-    def set_move_distance(self, selection):
+    def set_move_distance(self, event):
+        selection = self.distance_var.get()
         if selection == "Small":
             self.move_distance = 20
         elif selection == "Medium":
