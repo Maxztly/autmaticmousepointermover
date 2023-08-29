@@ -35,7 +35,6 @@ class MouseMoverApp:
         self.start_button = tk.Button(root, text=self.start_button_text, command=self.start_movement)
         self.start_button.grid(row=2, column=0, columnspan=3, padx=10, pady=10, sticky="nsew")
         
-        # Configure rows and columns to expand with window resizing
         root.grid_rowconfigure(0, weight=1)
         root.grid_rowconfigure(1, weight=1)
         root.grid_rowconfigure(2, weight=1)
@@ -53,7 +52,7 @@ class MouseMoverApp:
             self.is_running = True
             self.start_button_text = "Press ESC to exit"
             self.start_button.config(text=self.start_button_text)
-            self.seconds = 0  # Reset the timer
+            self.seconds = 0 
             self.start_movement_thread()
             self.update_timer()
 
